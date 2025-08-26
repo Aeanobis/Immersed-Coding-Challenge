@@ -109,6 +109,7 @@ static void flash_all_leds(int count, int delay_ms)
     }
 }
 
+
 // ============= Task 1: Battery Monitor =============
 static void battery_monitor_task(void *pvParameters)
 {
@@ -121,20 +122,16 @@ static void battery_monitor_task(void *pvParameters)
         // Read all battery data using battery_monitor module
         if (battery_monitor_read(&local_data) == ESP_OK) {
             
-            // If output is ON but charger reports charging, force battery-power mode
-            if (g_power_enabled && local_data.charge_status != CHARGE_STATUS_NOT_CHARGING) {
-                ESP_LOGW(TAG, "Power enabled but charging detected! Reconfiguring MP2672A...");
-                mp2672a_disable_charging_enable_battery_power();
-            }
-            
             // Update global state
             if (xSemaphoreTake(battery_data_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {
                 memcpy(&g_battery_data, &local_data, sizeof(battery_data_t));
                 xSemaphoreGive(battery_data_mutex);
             }
 
-            // Ensure we charge whenever output is OFF (USB present will start HW charge)
-            if (!g_power_enabled) {
+            // Keep charging enabled unless there are safety issues
+            // Let MP2672A power path management handle charge + power distribution
+            if (!(local_data.status & (BATTERY_STATUS_OVERVOLTAGE | BATTERY_STATUS_OVERTEMP | 
+                                     BATTERY_STATUS_OVERCURRENT | BATTERY_STATUS_FAULT))) {
                 (void)mp2672a_enable_charging_normal_mode();
             }
             
@@ -341,19 +338,14 @@ static void button_handler_task(void *pvParameters)
                         ESP_LOGE(TAG, "✗ Power enable DENIED");
                         flash_all_leds(3, 100);
                     } else {
-                        esp_err_t ret = mp2672a_disable_charging_enable_battery_power();
-                        if (ret == ESP_OK) {
-                            gpio_set_level(POWER_ENABLE_GPIO, 1);
-                            g_power_enabled = true;
-                            enabled_this_press = true; // mark that we enabled on this press
-                            ESP_LOGI(TAG, "✓ Power ENABLED  V=%d mV  SoC=%d%%  T=%.1f°C",
-                                     local_data.voltage_mv,
-                                     local_data.soc_percent,
-                                     local_data.temperature_c10 / 10.0f);
-                        } else {
-                            ESP_LOGE(TAG, "Failed to configure MP2672A for battery power");
-                            flash_all_leds(5, 100);
-                        }
+                        // Enable power output - keep charging enabled for charge-and-play
+                        gpio_set_level(POWER_ENABLE_GPIO, 1);
+                        g_power_enabled = true;
+                        enabled_this_press = true; // mark that we enabled on this press
+                        ESP_LOGI(TAG, "✓ Power ENABLED (charge-and-play mode)  V=%d mV  SoC=%d%%  T=%.1f°C",
+                                 local_data.voltage_mv,
+                                 local_data.soc_percent,
+                                 local_data.temperature_c10 / 10.0f);
                     }
                 } else {
                     // Toggle OFF (but not if we just enabled on this same press)
@@ -363,7 +355,6 @@ static void button_handler_task(void *pvParameters)
                     } else {
                         gpio_set_level(POWER_ENABLE_GPIO, 0);
                         g_power_enabled = false;
-                        mp2672a_enable_charging_normal_mode();
                         ESP_LOGI(TAG, "Power DISABLED");
                     }
                 }
@@ -380,7 +371,6 @@ static void button_handler_task(void *pvParameters)
                     ESP_LOGE(TAG, "⚠️ EMERGENCY SHUTDOWN!");
                     gpio_set_level(POWER_ENABLE_GPIO, 0);
                     g_power_enabled = false;
-                    mp2672a_enable_charging_normal_mode();
                     flash_all_leds(10, 50);
                 }
             }
