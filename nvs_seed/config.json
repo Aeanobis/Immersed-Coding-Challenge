@@ -1,0 +1,68 @@
+{
+	"wifi": {
+    "enable": {
+      "type": "string",
+      "value": "enable"
+    },
+    "mode": {
+      "type": "string",
+      "value": "sta"
+    },
+    "ssid": {
+      "type": "string",
+      "value": "PoojaSam7855"
+    },
+    "password": {
+      "type": "string",
+      "value": "7855internet"
+    },
+    "ip": {
+      "type": "string",
+      "value": "dynamic"
+    },
+    "dns": {
+      "type": "string",
+      "value": "8.8.8.8"
+    }
+  },
+  "eth": {
+    "enable": {
+      "type": "string",
+      "value": "enable"
+    },
+    "ipaddr": {
+      "type": "string",
+      "value": "192.168.0.131"
+    },
+    "subnet": {
+      "type": "string",
+      "value": "255.255.255.0"
+    },
+    "gateway": {
+      "type": "string",
+      "value": "192.168.0.100"
+    },
+    "bcast": {
+      "type": "string",
+      "value": "192.168.0.255"
+    },
+    "dns": {
+      "type": "string",
+      "value": "8.8.8.8"
+    },
+    "ipmode": {
+      "type": "string",
+      "value": "static"
+    },
+    "dhcps": {
+      "type": "string",
+      "value": "disable"
+    }
+  },
+  "config" : {
+    "name": {
+      "type": "string",
+      "value": ""
+    }
+  }
+}

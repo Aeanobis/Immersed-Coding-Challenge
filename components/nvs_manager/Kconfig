@@ -1,0 +1,21 @@
+menu "NVS Manager"
+
+    config NVS_MANAGER_PRIMARY_PARTITION
+        string "Set the primary partition of the NVS manager data"
+        default "nvs"
+        help
+            Name of the partition where the nvs manager will save the config data for the system
+            
+    config NVS_MANAGER_USE_BACKUP
+		bool "Use backup partition"
+		default n
+		help
+			Does NVS manager use a back up partition.
+		
+    config NVS_MANAGER_BACKUP_PARTITION
+        string "Set the backup partition of the NVS manager data"
+        default "nvs_conf_back"
+        help
+            Name of the backup partition where the nvs manager will save the config data for the system
+            
+endmenu

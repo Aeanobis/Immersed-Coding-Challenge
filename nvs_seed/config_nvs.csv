@@ -1,0 +1,10 @@
+key,type,encoding,value,
+control,namespace,,,
+humisp,data,string,70,
+usercal,data,string,0,
+factcal,data,string,0,
+unit,data,string,C,
+wifi,namespace,,,
+enable,data,string,disable,#enable/disable
+ssid,data,string,Notassid,
+password,data,string,notapasswor,

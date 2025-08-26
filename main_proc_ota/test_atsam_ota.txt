@@ -1,0 +1,4 @@
+This is a test OTA file for ATSAM.
+It will be provided to the processor via read record MODBUS command.
+Adding more bytes as we want to reach more that 64 bytes to make it a mininum of 2 records file.
+Trying reaaaaalllllyyyyy hard now.
